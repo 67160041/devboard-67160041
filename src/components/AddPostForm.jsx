@@ -1,4 +1,5 @@
 import { useState } from "react";
+const MAX_TITLE = 100;
 
 function AddPostForm({ onAddPost }) {
   const [title, setTitle] = useState("");
@@ -33,16 +34,27 @@ function AddPostForm({ onAddPost }) {
         placeholder="หัวข้อโพสต์"
         value={title}
         onChange={(e) => setTitle(e.target.value)}
+        maxLength={MAX_TITLE} // 👈 เพิ่มตรงนี้
         style={{
           width: "100%",
           padding: "0.5rem",
-          marginBottom: "0.5rem",
+          marginBottom: "0.25rem",
           border: "1px solid #cbd5e0",
           borderRadius: "4px",
           fontSize: "1rem",
           boxSizing: "border-box",
         }}
       />
+      <div
+        style={{
+          textAlign: "right",
+          fontSize: "0.8rem",
+          marginBottom: "0.5rem",
+          color: MAX_TITLE - title.length < 10 ? "#e53e3e" : "#718096", // 👈 เปลี่ยนสี
+        }}
+      >
+        {title.length}/{MAX_TITLE}
+      </div>
 
       <textarea
         placeholder="เนื้อหาโพสต์"
