@@ -1,14 +1,17 @@
 import { useState, useEffect } from "react";
-import PostCount from "./PostCount";
 import PostCard from "./PostCard";
 import LoadingSpinner from "./LoadingSpinner";
+import { useFavorites } from "../context/FavoritesContext";
+import PostCount from "./PostCount";
 
-function PostList({ favorites, onToggleFavorite }) {
+function PostList() {
+  const { favorites, toggleFavorite } = useFavorites();
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [search, setSearch] = useState("");
 
+  //useEffect ดึงข้อมูลจาก API ทันทีตอนเปิดเว็บ
   useEffect(() => {
     async function fetchPosts() {
       try {
@@ -17,7 +20,8 @@ function PostList({ favorites, onToggleFavorite }) {
         const res = await fetch("https://jsonplaceholder.typicode.com/posts");
         if (!res.ok) throw new Error("ดึงข้อมูลไม่สำเร็จ");
         const data = await res.json();
-        setPosts(data.slice(0, 20)); // เอาแค่ 20 รายการแรก
+        //เอาแค่ 20 รายการแรก
+        setPosts(data.slice(0, 20));
       } catch (err) {
         setError(err.message);
       } finally {
@@ -25,8 +29,10 @@ function PostList({ favorites, onToggleFavorite }) {
       }
     }
     fetchPosts();
-  }, []); // [] = ทำครั้งเดียวตอน component mount
+  }, []); //[] = ทำครั้งเดียว
 
+  //.filter เอาเฉพาะโพสต์ที่ชื่อตรงกับคำที่พิมพ์ในช่องค้นหา
+  //.toLowerCase ไม่สนจะตัวเล็กใหญ๋
   const filtered = posts.filter((post) =>
     post.title.toLowerCase().includes(search.toLowerCase()),
   );
@@ -60,13 +66,12 @@ function PostList({ favorites, onToggleFavorite }) {
         โพสต์ล่าสุด
       </h2>
 
-      {/*เรียกใช้component จำนวนโพสต์*/}
-      <PostCount count={posts.length} />
-
+      {/*ช่องค้นหา*/}
       <input
         type="text"
         placeholder="ค้นหาโพสต์..."
         value={search}
+        //อัปเดตคำค้นหาทุกครั้งที่ผู้ใช้พิมพ์
         onChange={(e) => setSearch(e.target.value)}
         style={{
           width: "100%",
@@ -78,19 +83,23 @@ function PostList({ favorites, onToggleFavorite }) {
           boxSizing: "border-box",
         }}
       />
+      {/*เรียกใช้component จำนวนโพสต์*/}
+      <PostCount count={filtered.length} />
 
+      {/*เท่ากับ0 หาไม่เจอ*/}
       {filtered.length === 0 && (
         <p style={{ color: "#718096", textAlign: "center", padding: "2rem" }}>
           ไม่พบโพสต์ที่ค้นหา
         </p>
       )}
 
+      {/*.map ลูปรายการที่กรองแล้วไปแสดงผ่านcomponent<PostCard />อีกที*/}
       {filtered.map((post) => (
         <PostCard
           key={post.id}
           post={post}
           isFavorite={favorites.includes(post.id)}
-          onToggleFavorite={() => onToggleFavorite(post.id)}
+          onToggleFavorite={() => toggleFavorite(post.id)}
         />
       ))}
     </div>
